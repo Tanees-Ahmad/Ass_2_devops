@@ -1,11 +1,74 @@
-name: "Integration"
+name: CI Pipeline
+
+# Trigger the pipeline on push and pull request events on the main branch
 on:
   push:
-    # run on pushes to main or release/*
     branches:
       - main
-    paths-ignore:
-      - '**/README.md'
-      - 'kustomize/**'
+  pull_request:
+    branches:
+      - main
+
+# Define the jobs to be run in this workflow
 jobs:
-  code-tests:
+  # Job for running unit tests
+  run-tests:
+    runs-on: ubuntu-latest
+
+    # Define the sequence of steps for the job
+    steps:
+      # Checkout the code from the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Set up Node.js (use a specific version or "node-version: '14.x'")
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16.x'
+
+      # Install dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # Run the unit tests
+      - name: Run unit tests
+        run: npm test
+
+  # Job for building the application
+  build-app:
+    runs-on: ubuntu-latest
+
+    # This job depends on 'run-tests' and will only run if tests pass
+    needs: run-tests
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16.x'
+
+      - name: Install dependencies
+        run: npm install
+
+      # Build the application
+      - name: Build the app
+        run: npm run build
+
+  # Job for deploying the application (conditional on successful build)
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-app
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Example of deployment step
+      # Modify this step with your actual deployment process
+      - name: Deploy to server
+        run: |
+          echo "Deploying the application to production server..."
+          # Add your deployment commands here (e.g., rsync, scp, etc.)
