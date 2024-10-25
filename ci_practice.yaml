@@ -1,1 +1,11 @@
-
+name: "Integration"
+on:
+  push:
+    # run on pushes to main or release/*
+    branches:
+      - main
+    paths-ignore:
+      - '**/README.md'
+      - 'kustomize/**'
+jobs:
+  code-tests:
